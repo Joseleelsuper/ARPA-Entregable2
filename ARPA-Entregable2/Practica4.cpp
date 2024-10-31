@@ -69,28 +69,35 @@ int main(int argc, char* argv[]) {
 		printMatrix(matrix);
     }
 
+	// Definir los tipos de datos para las matrices triangulares superior e inferior.
     MPI_Datatype upper_triangle, lower_triangle;
 
-    // Definir el tipo de dato para la matriz triangular superior
+    // Definir el tipo de dato para la matriz triangular superior.
     int block_lengths_upper[TAM_MATRIX]{};
     MPI_Aint displacements_upper[TAM_MATRIX]{};
+    // Definir el tipo de dato para la matriz triangular inferior.
+    int block_lengths_lower[TAM_MATRIX]{};
+    MPI_Aint displacements_lower[TAM_MATRIX]{};
+
+	// Obtener la dirección base de la matriz para calcular los desplazamientos.
     MPI_Aint base_address;
 
     MPI_Get_address(&matrix.data[0][0], &base_address);
 
     for (int i = 0; i < TAM_MATRIX; ++i) {
+		// Calcular el número de elementos de cada fila.
         block_lengths_upper[i] = TAM_MATRIX - i;
         MPI_Aint address;
+		// Obtener la dirección de la diagonal de la matriz.
         MPI_Get_address(&matrix.data[i][i], &address);
+        // Calcular el desplazamiento de cada fila.
         displacements_upper[i] = address - base_address;
     }
 
+	// Crear el tipo de dato para la matriz triangular superior.
     MPI_Type_create_hindexed(TAM_MATRIX, block_lengths_upper, displacements_upper, MPI_INT, &upper_triangle);
+	// Completar la creación del tipo de dato.
     MPI_Type_commit(&upper_triangle);
-
-    // Definir el tipo de dato para la matriz triangular inferior
-    int block_lengths_lower[TAM_MATRIX]{};
-    MPI_Aint displacements_lower[TAM_MATRIX]{};
 
     for (int i = 0; i < TAM_MATRIX; ++i) {
         block_lengths_lower[i] = i + 1;
@@ -103,10 +110,12 @@ int main(int argc, char* argv[]) {
     MPI_Type_commit(&lower_triangle);
 
     if (rank == RANK_MASTER) {
+		// Enviar la matriz triangular superior al proceso 1 y la matriz triangular inferior al proceso 2.
         MPI_Send(&matrix, NUM_DATOS, upper_triangle, 1, TAG, MPI_COMM_WORLD);
         MPI_Send(&matrix, NUM_DATOS, lower_triangle, 2, TAG, MPI_COMM_WORLD);
     }
     else {
+		// Mostrar resultados.
 		printf("Matriz antes de recibir los datos en el proceso %d:\n", rank);
 		printMatrix(matrix);
         if (rank == 1) {
@@ -119,6 +128,7 @@ int main(int argc, char* argv[]) {
         printMatrix(matrix);
     }
 
+	// Liberar los tipos de datos.
     MPI_Type_free(&upper_triangle);
     MPI_Type_free(&lower_triangle);
     MPI_Finalize();
