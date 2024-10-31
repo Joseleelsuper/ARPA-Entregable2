@@ -26,7 +26,7 @@ static void generateMatrix(Matrix& matrix) {
 static void printLine() {
     printf("+");
     for (int j = 0; j < TAM_MATRIX - 1; ++j) {
-        printf("-----");
+        printf("----+");
     }
     printf("----+\n");
 }
@@ -56,7 +56,7 @@ int main(int argc, char* argv[]) {
 
 	if (size < 3) {
 		if (rank == RANK_MASTER) {
-			printf("El número de procesos debe ser 3.\n");
+			printf("El número de procesos debe ser mínimo de 3.\n");
 		}
 		MPI_Abort(MPI_COMM_WORLD, 1);
 	}
@@ -107,6 +107,8 @@ int main(int argc, char* argv[]) {
         MPI_Send(&matrix, NUM_DATOS, lower_triangle, 2, TAG, MPI_COMM_WORLD);
     }
     else {
+		printf("Matriz antes de recibir los datos en el proceso %d:\n", rank);
+		printMatrix(matrix);
         if (rank == 1) {
             MPI_Recv(&matrix, NUM_DATOS, upper_triangle, RANK_MASTER, TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
         }
