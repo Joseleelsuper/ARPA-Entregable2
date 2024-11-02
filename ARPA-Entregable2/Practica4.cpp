@@ -54,9 +54,9 @@ int main(int argc, char* argv[]) {
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
 
-	if (size < 3) {
+	if (size < 1) {
 		if (rank == RANK_MASTER) {
-			printf("El número de procesos debe ser mínimo de 3.\n");
+			printf("El número de procesos debe ser mínimo de 1.\n");
 		}
 		MPI_Abort(MPI_COMM_WORLD, 1);
 	}
